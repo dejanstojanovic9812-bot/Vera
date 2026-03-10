@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VERA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111111;
+    --border: #1e1e1e;
+    --border-active: #333333;
+    --text: #e8e8e8;
+    --text-dim: #555555;
+    --text-mid: #888888;
+    --accent: #c8f135;
+    --accent-dim: rgba(200, 241, 53, 0.08);
+    --accent-glow: rgba(200, 241, 53, 0.15);
+    --user-bg: #161616;
+    --vera-bg: #0d0d0d;
+    --red: #ff4444;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    overflow: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* LAYOUT */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .logo-name {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: var(--text);
+  }
+
+  .logo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2.5s ease-in-out infinite;
+    margin-bottom: 2px;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .status-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .memory-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .memory-btn:hover { border-color: var(--border-active); color: var(--text-mid); }
+
+  /* API KEY SETUP */
+  #api-setup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    gap: 24px;
+  }
+
+  .setup-title {
+    font-size: 13px;
+    font-family: var(--font-mono);
+    color: var(--text-mid);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .setup-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.6;
+    font-family: var(--font-mono);
+    max-width: 300px;
+  }
+
+  .api-input-wrap {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .api-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.04em;
+  }
+
+  .api-input:focus { border-color: var(--accent); }
+  .api-input::placeholder { color: var(--text-dim); }
+
+  .api-submit {
+    width: 100%;
+    background: var(--accent);
+    color: #080808;
+    border: none;
+    border-radius: 6px;
+    padding: 14px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .api-submit:hover { opacity: 0.85; }
+
+  /* CHAT AREA */
+  #chat-area {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* MESSAGES */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    scroll-behavior: smooth;
+  }
+
+  #messages::-webkit-scrollbar { width: 2px; }
+  #messages::-webkit-scrollbar-track { background: transparent; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border-active); border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: fadeSlide 0.25s ease forwards;
+    max-width: 100%;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 4px;
+  }
+
+  .msg.user .msg-label { color: var(--text-dim); }
+  .msg.vera .msg-label { color: var(--accent); opacity: 0.7; }
+
+  .msg-bubble {
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.65;
+    border: 1px solid transparent;
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--user-bg);
+    border-color: var(--border);
+    color: var(--text);
+    align-self: flex-end;
+    max-width: 88%;
+  }
+
+  .msg.vera .msg-bubble {
+    background: var(--vera-bg);
+    border-color: var(--border);
+    color: var(--text);
+    align-self: flex-start;
+    max-width: 100%;
+    border-left: 2px solid var(--accent);
+  }
+
+  .msg.vera .msg-bubble a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .msg.vera .msg-bubble strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .msg.vera .msg-bubble code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* THINKING INDICATOR */
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 12px 14px;
+    background: var(--vera-bg);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: 8px;
+    align-self: flex-start;
+  }
+
+  .thinking span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  .thinking span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* INPUT AREA */
+  #input-area {
+    padding: 12px 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  #user-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    resize: none;
+    min-height: 46px;
+    max-height: 120px;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+    overflow-y: auto;
+  }
+
+  #user-input:focus { border-color: var(--border-active); }
+  #user-input::placeholder { color: var(--text-dim); }
+
+  .send-btn, .voice-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .send-btn:hover { opacity: 0.85; }
+  .send-btn svg { color: #080808; }
+
+  .voice-btn:hover { border-color: var(--border-active); }
+  .voice-btn svg { color: var(--text-mid); }
+
+  .voice-btn.recording {
+    border-color: var(--red);
+    background: rgba(255,68,68,0.08);
+    animation: recording-pulse 1s ease-in-out infinite;
+  }
+
+  .voice-btn.recording svg { color: var(--red); }
+
+  @keyframes recording-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(255,68,68,0); }
+  }
+
+  .voice-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-align: center;
+    height: 14px;
+    transition: all 0.2s;
+  }
+
+  .voice-status.active { color: var(--red); }
+
+  /* MEMORY PANEL */
+  #memory-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8,8,8,0.95);
+    z-index: 100;
+    flex-direction: column;
+    padding: 24px 20px;
+    gap: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+    animation: fadeSlide 0.2s ease;
+  }
+
+  #memory-panel.open { display: flex; }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+
+  .close-btn:hover { color: var(--text); }
+
+  #memory-content {
+    flex: 1;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    padding: 4px;
+  }
+
+  .memory-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .mem-btn {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mem-btn:hover { border-color: var(--border-active); color: var(--text-mid); }
+  .mem-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 32px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.3s forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .empty-vera {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: var(--border-active);
+  }
+
+  .empty-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* DATE CHIP */
+  .date-chip {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 8px 0 4px;
+  }
+
+  /* QUICK ACTIONS BAR */
+  #quick-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px 0;
+    flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #quick-actions::-webkit-scrollbar { display: none; }
+
+  .quick-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-mid);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .quick-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .quick-btn.briefing-btn {
+    border-color: rgba(200, 241, 53, 0.3);
+    color: var(--accent);
+  }
+
+  .quick-btn.briefing-btn:hover {
+    background: var(--accent-dim);
+  }
+
+  .quick-btn svg {
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="logo">
+      <span class="logo-name">VERA</span>
+      <div class="logo-dot"></div>
+    </div>
+    <div class="header-right">
+      <span class="status-badge" id="status-text">offline</span>
+      <button class="memory-btn" onclick="toggleMemory()">MEMORY</button>
+    </div>
+  </header>
+
+  <!-- API SETUP -->
+  <div id="api-setup">
+    <div class="setup-title">Initialize VERA</div>
+    <div class="setup-desc">Enter your Anthropic API key to begin. It's stored locally on your device only.</div>
+    <div class="api-input-wrap">
+      <input type="password" class="api-input" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off" />
+      <button class="api-submit" onclick="initVera()">ACTIVATE</button>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat-area">
+
+    <!-- QUICK ACTIONS -->
+    <div id="quick-actions">
+      <button class="quick-btn briefing-btn" onclick="morningBriefing()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        Morning Briefing
+      </button>
+      <button class="quick-btn" onclick="quickResearch()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Research
+      </button>
+    </div>
+
+    <div id="messages">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-vera">VERA</div>
+        <div class="empty-sub">Direct. Intelligent. Ready.<br>What do you need?</div>
+      </div>
+    </div>
+
+    <div id="input-area">
+      <div class="input-row">
+        <textarea id="user-input" rows="1" placeholder="Ask anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice input">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+        <button class="send-btn" onclick="sendMessage()" title="Send">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="voice-status" id="voice-status"></div>
+    </div>
+  </div>
+
+  <!-- MEMORY PANEL -->
+  <div id="memory-panel">
+    <div class="panel-header">
+      <span class="panel-title">VERA's Memory</span>
+      <button class="close-btn" onclick="toggleMemory()">×</button>
+    </div>
+    <div id="memory-content">No memories yet.</div>
+    <div class="memory-actions">
+      <button class="mem-btn" onclick="exportMemory()">Export</button>
+      <button class="mem-btn danger" onclick="clearMemory()">Clear All</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let apiKey = '';
+let conversationHistory = [];
+let memory = {};
+let isRecording = false;
+let recognition = null;
+let synth = window.speechSynthesis;
+
+const MEMORY_KEY = 'vera_memory';
+const HISTORY_KEY = 'vera_history';
+
+// ─── SYSTEM PROMPT ───────────────────────────────────────
+function buildSystemPrompt() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const memStr = Object.keys(memory).length > 0
+    ? JSON.stringify(memory, null, 2)
+    : 'No stored memories yet.';
+
+  return `You are VERA — a sharp, direct personal assistant. No fluff, no filler. You speak like a trusted advisor who respects the user's intelligence.
+
+Current date: ${dateStr}
+Current time: ${timeStr}
+
+PERSONALITY:
+- Direct and concise. Say what needs to be said.
+- Intelligent without being condescending.
+- Warm but not sycophantic. Never start with "Great question!" or similar.
+- A dry wit when appropriate — never forced.
+- You remember things and use them. You build a picture of the user over time.
+
+LANGUAGE:
+- Detect the language the user writes in and respond in the same language.
+- If they write in Serbian (Latin or Cyrillic), respond in Serbian.
+- If they write in English, respond in English.
+- Match their register — casual stays casual, formal stays formal.
+
+MEMORY:
+You have access to stored memories about the user. Use them naturally — don't announce that you're using memory, just use it.
+Current memories: ${memStr}
+
+When you learn something important about the user (preferences, goals, context, facts about their life/work), end your response with a special memory update block — ONLY when there's genuinely new info worth remembering:
+<MEMORY_UPDATE>
+{"key": "value"}
+</MEMORY_UPDATE>
+
+FORMATTING:
+- Use markdown sparingly. Bold for emphasis only when it really helps.
+- Keep responses tight. If it can be said in 3 sentences, don't use 6.
+- For lists, use them only when structure genuinely helps.
+- No unnecessary preambles.`;
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+function initVera() {
+  const input = document.getElementById('api-key-input');
+  const key = input.value.trim();
+
+  if (!key.startsWith('sk-ant-')) {
+    input.style.borderColor = '#ff4444';
+    setTimeout(() => input.style.borderColor = '', 1500);
+    return;
+  }
+
+  apiKey = key;
+  localStorage.setItem('vera_api_key', key);
+
+  // Load memory & history
+  try { memory = JSON.parse(localStorage.getItem(MEMORY_KEY) || '{}'); } catch(e) { memory = {}; }
+  try { conversationHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { conversationHistory = []; }
+
+  document.getElementById('api-setup').style.display = 'none';
+  document.getElementById('chat-area').style.display = 'flex';
+  document.getElementById('status-text').textContent = 'online';
+
+  initSpeech();
+
+  // Restore history display
+  if (conversationHistory.length > 0) {
+    document.getElementById('empty-state').style.display = 'none';
+    conversationHistory.forEach(msg => {
+      if (msg.role === 'user') appendMessage('user', msg.content);
+      else if (msg.role === 'assistant') appendMessage('vera', msg.content);
+    });
+  }
+}
+
+// Auto-load key if saved
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('vera_api_key');
+  if (saved) {
+    document.getElementById('api-key-input').value = saved;
+    initVera();
+  }
+});
+
+// ─── MESSAGING ───────────────────────────────────────────
+
+function appendMessage(role, content) {
+  const messages = document.getElementById('messages');
+
+  const msg = document.createElement('div');
+  msg.className = `msg ${role}`;
+
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = role === 'user' ? 'YOU' : 'VERA';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = formatMessage(content);
+
+  msg.appendChild(label);
+  msg.appendChild(bubble);
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function formatMessage(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+function showThinking() {
+  const messages = document.getElementById('messages');
+  const el = document.createElement('div');
+  el.className = 'msg vera';
+  el.innerHTML = `<div class="msg-label">VERA</div><div class="thinking"><span></span><span></span><span></span></div>`;
+  messages.appendChild(el);
+  messages.scrollTop = messages.scrollHeight;
+  return el;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ─── VOICE ───────────────────────────────────────────────
+function initSpeech() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    document.getElementById('voice-btn').style.opacity = '0.3';
+    document.getElementById('voice-btn').title = 'Voice not supported in this browser';
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'sr-RS';
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('user-input').value = transcript;
+    autoResize(document.getElementById('user-input'));
+    if (e.results[e.results.length - 1].isFinal) {
+      stopRecording();
+      document.getElementById('voice-btn').classList.add('just-used');
+      sendMessage(transcript);
+    }
+  };
+
+  recognition.onerror = () => stopRecording();
+  recognition.onend = () => stopRecording();
+}
+
+function toggleVoice() {
+  if (isRecording) stopRecording();
+  else startRecording();
+}
+
+function startRecording() {
+  if (!recognition) return;
+  isRecording = true;
+  recognition.start();
+  document.getElementById('voice-btn').classList.add('recording');
+  document.getElementById('voice-status').textContent = 'Listening...';
+  document.getElementById('voice-status').classList.add('active');
+}
+
+function stopRecording() {
+  if (!recognition) return;
+  isRecording = false;
+  try { recognition.stop(); } catch(e) {}
+  document.getElementById('voice-btn').classList.remove('recording');
+  document.getElementById('voice-status').textContent = '';
+  document.getElementById('voice-status').classList.remove('active');
+}
+
+function speak(text) {
+  if (!synth) return;
+  synth.cancel();
+  const clean = text.replace(/<[^>]*>/g, '').replace(/\*\*/g, '');
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.rate = 1.05;
+  utter.pitch = 1;
+  synth.speak(utter);
+}
+
+// ─── MEMORY PANEL ────────────────────────────────────────
+function toggleMemory() {
+  const panel = document.getElementById('memory-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    const content = document.getElementById('memory-content');
+    content.textContent = Object.keys(memory).length > 0
+      ? JSON.stringify(memory, null, 2)
+      : 'No memories yet.\n\nVERA will learn about you as you talk.';
+  }
+}
+
+function clearMemory() {
+  if (confirm('Clear all of VERA\'s memories?')) {
+    memory = {};
+    localStorage.removeItem(MEMORY_KEY);
+    document.getElementById('memory-content').textContent = 'Memory cleared.';
+  }
+}
+
+function exportMemory() {
+  const blob = new Blob([JSON.stringify(memory, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vera-memory.json';
+  a.click();
+}
+
+function saveHistory() {
+  // Keep last 40 messages to avoid bloat
+  if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(conversationHistory));
+}
+
+// ─── MORNING BRIEFING ────────────────────────────────────
+async function morningBriefing() {
+  document.getElementById('empty-state').style.display = 'none';
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const briefingPrompt = `Today is ${dateStr}. Generate a short morning briefing for Dejan (Belgrade, Serbia). Search the web for today's latest news across these 4 areas and give a punchy 2-3 minute read summary:
+
+1. **AI & Tech** — most important AI/tech development in the last 24-48h
+2. **Marketing & Branding** — one actionable insight or notable trend
+3. **Supplement & Fitness Industry** — any notable news (new research, industry moves, etc.)
+4. **Serbia/Regional Business** — any relevant local business or economic news
+
+Format: Each section starts with a bold emoji header. 2-4 sentences max per section. End with one "Worth watching today:" line. Be direct, no filler. Write in English.`;
+
+  appendMessage('user', '☀️ Morning Briefing');
+  conversationHistory.push({ role: 'user', content: briefingPrompt });
+  saveHistory();
+
+  const thinking = showThinking();
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'anthropic-beta': 'interleaved-thinking-2025-05-14'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: buildSystemPrompt(),
+        tools: [{
+          type: 'web_search_20250305',
+          name: 'web_search',
+          max_uses: 6
+        }],
+        messages: conversationHistory
+      })
+    });
+
+    thinking.remove();
+
+    if (!response.ok) {
+      const err = await response.json();
+      appendMessage('vera', `Briefing error: ${err.error?.message || 'Something went wrong.'}`);
+      return;
+    }
+
+    const data = await response.json();
+    const reply = data.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n')
+      .trim();
+
+    if (reply) {
+      appendMessage('vera', reply);
+      conversationHistory.push({ role: 'assistant', content: reply });
+      saveHistory();
+    }
+
+  } catch (err) {
+    thinking.remove();
+    appendMessage('vera', 'Could not load briefing. Check connection and try again.');
+  }
+}
+
+// ─── QUICK RESEARCH ──────────────────────────────────────
+function quickResearch() {
+  const input = document.getElementById('user-input');
+  input.value = 'Research: ';
+  input.focus();
+  // Place cursor at end
+  const len = input.value.length;
+  input.setSelectionRange(len, len);
+}
+
+// Override sendMessage to detect research intent and use web search
+const _originalSendMessage = sendMessage;
+async function sendMessage(text) {
+  const input = document.getElementById('user-input');
+  const content = text || input.value.trim();
+  if (!content || !apiKey) return;
+
+  const isResearch = content.toLowerCase().startsWith('research:') ||
+    content.toLowerCase().includes('search for') ||
+    content.toLowerCase().includes('find out') ||
+    content.toLowerCase().includes('latest') ||
+    content.toLowerCase().includes('news about') ||
+    content.toLowerCase().includes('what is happening') ||
+    content.toLowerCase().includes('pronađi') ||
+    content.toLowerCase().includes('pretraži') ||
+    content.toLowerCase().includes('istraži');
+
+  input.value = '';
+  autoResize(input);
+  document.getElementById('empty-state').style.display = 'none';
+  appendMessage('user', content);
+  conversationHistory.push({ role: 'user', content });
+  saveHistory();
+
+  const thinking = showThinking();
+
+  try {
+    const body = {
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      system: buildSystemPrompt(),
+      messages: conversationHistory
+    };
+
+    if (isResearch) {
+      body.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: 4 }];
+      body.max_tokens = 2000;
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify(body)
+    });
+
+    thinking.remove();
+
+    if (!response.ok) {
+      const err = await response.json();
+      appendMessage('vera', `Error: ${err.error?.message || 'Something went wrong.'}`);
+      return;
+    }
+
+    const data = await response.json();
+    let reply = data.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('\n')
+      .trim();
+
+    if (!reply) {
+      appendMessage('vera', 'No response. Try again.');
+      return;
+    }
+
+    // Extract memory updates
+    const memMatch = reply.match(/<MEMORY_UPDATE>([\s\S]*?)<\/MEMORY_UPDATE>/);
+    if (memMatch) {
+      try {
+        const updates = JSON.parse(memMatch[1].trim());
+        memory = { ...memory, ...updates };
+        localStorage.setItem(MEMORY_KEY, JSON.stringify(memory));
+      } catch(e) {}
+      reply = reply.replace(/<MEMORY_UPDATE>[\s\S]*?<\/MEMORY_UPDATE>/, '').trim();
+    }
+
+    appendMessage('vera', reply);
+    conversationHistory.push({ role: 'assistant', content: reply });
+    saveHistory();
+
+    if (document.getElementById('voice-btn').classList.contains('just-used')) {
+      speak(reply);
+      document.getElementById('voice-btn').classList.remove('just-used');
+    }
+
+  } catch (err) {
+    thinking.remove();
+    appendMessage('vera', 'Connection error. Check your API key and try again.');
+  }
+}
+</script>
+</body>
+</html>
