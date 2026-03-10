@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#080808"/>
+  
+  <!-- Outer glow ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#c8f135" stroke-width="2" opacity="0.15"/>
+  
+  <!-- Brain shape - left hemisphere -->
+  <path d="M256 160 
+    C220 160 190 175 175 200
+    C158 220 155 245 162 265
+    C155 275 152 290 158 305
+    C165 322 180 332 196 335
+    C205 350 220 358 238 358
+    L238 160 Z" 
+    fill="none" stroke="#c8f135" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Brain shape - right hemisphere -->
+  <path d="M256 160 
+    C292 160 322 175 337 200
+    C354 220 357 245 350 265
+    C357 275 360 290 354 305
+    C347 322 332 332 316 335
+    C307 350 292 358 274 358
+    L274 358 L274 160 Z" 
+    fill="none" stroke="#c8f135" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Center divider -->
+  <line x1="256" y1="160" x2="256" y2="358" stroke="#c8f135" stroke-width="4" opacity="0.4"/>
+
+  <!-- Circuit lines - left -->
+  <path d="M238 200 L200 200 L200 185" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="200" cy="183" r="5" fill="#c8f135" opacity="0.9"/>
+  
+  <path d="M238 230 L190 230 L190 245 L175 245" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="173" cy="245" r="5" fill="#c8f135" opacity="0.9"/>
+  
+  <path d="M238 270 L205 270 L205 285" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="205" cy="287" r="5" fill="#c8f135" opacity="0.9"/>
+  
+  <path d="M238 310 L210 310 L210 325 L225 325" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="227" cy="325" r="5" fill="#c8f135" opacity="0.9"/>
+
+  <!-- Circuit lines - right -->
+  <path d="M274 200 L312 200 L312 185" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="312" cy="183" r="5" fill="#c8f135" opacity="0.9"/>
+  
+  <path d="M274 230 L322 230 L322 245 L337 245" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="339" cy="245" r="5" fill="#c8f135" opacity="0.9"/>
+  
+  <path d="M274 270 L307 270 L307 285" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="307" cy="287" r="5" fill="#c8f135" opacity="0.9"/>
+
+  <path d="M274 310 L302 310 L302 325 L287 325" fill="none" stroke="#c8f135" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <circle cx="285" cy="325" r="5" fill="#c8f135" opacity="0.9"/>
+
+  <!-- Center pulse dot -->
+  <circle cx="256" cy="256" r="8" fill="#c8f135"/>
+  <circle cx="256" cy="256" r="14" fill="none" stroke="#c8f135" stroke-width="2" opacity="0.4"/>
+</svg>
