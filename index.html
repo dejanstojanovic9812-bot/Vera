@@ -571,6 +571,257 @@
   .quick-btn svg {
     flex-shrink: 0;
   }
+
+  /* SETTINGS PANEL */
+  #settings-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8,8,8,0.97);
+    z-index: 100;
+    flex-direction: column;
+    padding: 24px 20px;
+    gap: 20px;
+    max-width: 480px;
+    margin: 0 auto;
+    animation: fadeSlide 0.2s ease;
+    overflow-y: auto;
+  }
+  #settings-panel.open { display: flex; }
+
+  .settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .settings-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .settings-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .settings-input:focus { border-color: var(--accent); }
+  .settings-input::placeholder { color: var(--text-dim); }
+
+  .settings-save {
+    background: var(--accent);
+    color: #080808;
+    border: none;
+    border-radius: 6px;
+    padding: 11px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .settings-save:hover { opacity: 0.85; }
+
+  .integration-status {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+  .integration-status.connected { color: var(--accent); }
+  .integration-status.disconnected { color: var(--text-dim); }
+
+  /* TASKS PANEL */
+  #tasks-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(8,8,8,0.97);
+    z-index: 100;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    animation: fadeSlide 0.2s ease;
+  }
+  #tasks-panel.open { display: flex; }
+
+  .tasks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .tasks-title {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+
+  .tasks-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+    animation: fadeSlide 0.2s ease forwards;
+  }
+
+  .task-item:hover { border-color: var(--border-active); }
+
+  .task-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-active);
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .task-check:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .task-check.done {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .task-text.done {
+    text-decoration: line-through;
+    color: var(--text-dim);
+  }
+
+  .task-due {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+
+  .task-due.overdue { color: var(--red); }
+  .task-due.today { color: var(--accent); }
+
+  .tasks-add {
+    padding: 12px 20px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .task-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .task-input:focus { border-color: var(--border-active); }
+  .task-input::placeholder { color: var(--text-dim); }
+
+  .task-add-btn {
+    width: 42px;
+    height: 42px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+  }
+  .task-add-btn:hover { opacity: 0.85; }
+
+  .tasks-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .tasks-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .tasks-filter {
+    display: flex;
+    gap: 6px;
+    padding: 0 20px 12px;
+    flex-shrink: 0;
+  }
+
+  .filter-btn {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 10px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -583,6 +834,7 @@
     </div>
     <div class="header-right">
       <span class="status-badge" id="status-text">offline</span>
+      <button class="memory-btn" onclick="toggleSettings()">⚙</button>
       <button class="memory-btn" onclick="toggleMemory()">MEMORY</button>
     </div>
   </header>
@@ -605,6 +857,10 @@
       <button class="quick-btn briefing-btn" onclick="morningBriefing()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         Morning Briefing
+      </button>
+      <button class="quick-btn" onclick="toggleTasks()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tasks
       </button>
       <button class="quick-btn" onclick="quickResearch()">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -641,6 +897,59 @@
     </div>
   </div>
 
+  <!-- SETTINGS PANEL -->
+  <div id="settings-panel">
+    <div class="panel-header">
+      <span class="panel-title">Settings</span>
+      <button class="close-btn" onclick="toggleSettings()">×</button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Anthropic API Key</div>
+      <input type="password" class="settings-input" id="settings-api-key" placeholder="sk-ant-api03-..." autocomplete="off" />
+      <div class="settings-label" id="api-status" style="color: var(--accent)"></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Todoist API Token
+        <span class="integration-status" id="todoist-status" style="margin-left:8px"></span>
+      </div>
+      <input type="password" class="settings-input" id="settings-todoist" placeholder="Your Todoist API token..." autocomplete="off" />
+    </div>
+
+    <button class="settings-save" onclick="saveSettings()">Save Settings</button>
+  </div>
+
+  <!-- TASKS PANEL -->
+  <div id="tasks-panel">
+    <div class="tasks-header">
+      <span class="tasks-title">Tasks</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="memory-btn" onclick="loadTasks()" title="Refresh">↻</button>
+        <button class="close-btn" onclick="toggleTasks()">×</button>
+      </div>
+    </div>
+
+    <div class="tasks-filter">
+      <button class="filter-btn active" id="filter-today" onclick="setFilter('today')">Today</button>
+      <button class="filter-btn" id="filter-all" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" id="filter-overdue" onclick="setFilter('overdue')">Overdue</button>
+    </div>
+
+    <div class="tasks-body" id="tasks-body">
+      <div class="tasks-loading">
+        <div class="thinking"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+
+    <div class="tasks-add">
+      <input type="text" class="task-input" id="new-task-input" placeholder="Add a task..." onkeydown="if(event.key==='Enter') addTask()" />
+      <button class="task-add-btn" onclick="addTask()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#080808" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
   <!-- MEMORY PANEL -->
   <div id="memory-panel">
     <div class="panel-header">
@@ -659,14 +968,18 @@
 <script>
 // ─── STATE ───────────────────────────────────────────────
 let apiKey = '';
+let todoistToken = '';
 let conversationHistory = [];
 let memory = {};
 let isRecording = false;
 let recognition = null;
 let synth = window.speechSynthesis;
+let allTasks = [];
+let currentFilter = 'today';
 
 const MEMORY_KEY = 'vera_memory';
 const HISTORY_KEY = 'vera_history';
+const TODOIST_KEY = 'vera_todoist';
 
 // ─── SYSTEM PROMPT ───────────────────────────────────────
 function buildSystemPrompt() {
@@ -726,9 +1039,10 @@ function initVera() {
   apiKey = key;
   localStorage.setItem('vera_api_key', key);
 
-  // Load memory & history
+  // Load memory, history & integrations
   try { memory = JSON.parse(localStorage.getItem(MEMORY_KEY) || '{}'); } catch(e) { memory = {}; }
   try { conversationHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { conversationHistory = []; }
+  todoistToken = localStorage.getItem(TODOIST_KEY) || '';
 
   document.getElementById('api-setup').style.display = 'none';
   document.getElementById('chat-area').style.display = 'flex';
@@ -749,6 +1063,7 @@ function initVera() {
 // Auto-load key if saved
 window.addEventListener('load', () => {
   const saved = localStorage.getItem('vera_api_key');
+  todoistToken = localStorage.getItem(TODOIST_KEY) || '';
   if (saved) {
     document.getElementById('api-key-input').value = saved;
     initVera();
@@ -901,6 +1216,178 @@ function saveHistory() {
   // Keep last 40 messages to avoid bloat
   if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(conversationHistory));
+}
+
+// ─── SETTINGS ────────────────────────────────────────────
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    document.getElementById('settings-api-key').value = apiKey ? '••••••••••••••••' : '';
+    document.getElementById('settings-todoist').value = todoistToken ? '••••••••••••••••' : '';
+    document.getElementById('todoist-status').textContent = todoistToken ? '● connected' : '○ not connected';
+    document.getElementById('todoist-status').className = 'integration-status ' + (todoistToken ? 'connected' : 'disconnected');
+  }
+}
+
+function saveSettings() {
+  const newApiKey = document.getElementById('settings-api-key').value.trim();
+  const newTodoist = document.getElementById('settings-todoist').value.trim();
+
+  if (newApiKey && !newApiKey.startsWith('•')) {
+    if (!newApiKey.startsWith('sk-ant-')) {
+      document.getElementById('settings-api-key').style.borderColor = 'var(--red)';
+      setTimeout(() => document.getElementById('settings-api-key').style.borderColor = '', 1500);
+      return;
+    }
+    apiKey = newApiKey;
+    localStorage.setItem('vera_api_key', apiKey);
+  }
+
+  if (newTodoist && !newTodoist.startsWith('•')) {
+    todoistToken = newTodoist;
+    localStorage.setItem(TODOIST_KEY, todoistToken);
+  }
+
+  document.getElementById('todoist-status').textContent = todoistToken ? '● connected' : '○ not connected';
+  document.getElementById('todoist-status').className = 'integration-status ' + (todoistToken ? 'connected' : 'disconnected');
+  document.getElementById('settings-todoist').value = todoistToken ? '••••••••••••••••' : '';
+
+  toggleSettings();
+}
+
+// ─── TASKS ───────────────────────────────────────────────
+function toggleTasks() {
+  const panel = document.getElementById('tasks-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    if (!todoistToken) {
+      document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">Connect Todoist in ⚙ Settings first</div>`;
+      return;
+    }
+    loadTasks();
+  }
+}
+
+function setFilter(filter) {
+  currentFilter = filter;
+  ['today','all','overdue'].forEach(f => {
+    document.getElementById('filter-'+f).classList.toggle('active', f === filter);
+  });
+  renderTasks();
+}
+
+async function loadTasks() {
+  if (!todoistToken) return;
+  document.getElementById('tasks-body').innerHTML = `<div class="tasks-loading"><div class="thinking"><span></span><span></span><span></span></div></div>`;
+
+  try {
+    const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
+      headers: { 'Authorization': `Bearer ${todoistToken}` }
+    });
+
+    if (!response.ok) {
+      document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">Could not load tasks. Check your token.</div>`;
+      return;
+    }
+
+    allTasks = await response.json();
+    renderTasks();
+
+  } catch(err) {
+    document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">Connection error.</div>`;
+  }
+}
+
+function renderTasks() {
+  const today = new Date().toISOString().split('T')[0];
+  let filtered = allTasks;
+
+  if (currentFilter === 'today') {
+    filtered = allTasks.filter(t => t.due && t.due.date <= today);
+  } else if (currentFilter === 'overdue') {
+    filtered = allTasks.filter(t => t.due && t.due.date < today);
+  }
+
+  if (filtered.length === 0) {
+    document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">${currentFilter === 'today' ? 'Nothing due today.' : 'No tasks found.'}</div>`;
+    return;
+  }
+
+  // Sort: overdue first, then today, then future
+  filtered.sort((a, b) => {
+    const da = a.due?.date || '9999';
+    const db = b.due?.date || '9999';
+    return da.localeCompare(db);
+  });
+
+  document.getElementById('tasks-body').innerHTML = filtered.map(task => {
+    const dueDate = task.due?.date;
+    let dueLabel = '';
+    let dueClass = '';
+    if (dueDate) {
+      if (dueDate < today) { dueLabel = 'Overdue · ' + dueDate; dueClass = 'overdue'; }
+      else if (dueDate === today) { dueLabel = 'Today'; dueClass = 'today'; }
+      else { dueLabel = dueDate; }
+    }
+    return `
+      <div class="task-item" id="task-${task.id}">
+        <button class="task-check" onclick="completeTask('${task.id}')" title="Complete"></button>
+        <div style="flex:1;min-width:0;">
+          <div class="task-text">${escapeHtml(task.content)}</div>
+          ${dueLabel ? `<div class="task-due ${dueClass}">${dueLabel}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function completeTask(taskId) {
+  const el = document.getElementById('task-' + taskId);
+  const check = el?.querySelector('.task-check');
+  const text = el?.querySelector('.task-text');
+
+  if (check) { check.classList.add('done'); check.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#080808" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`; }
+  if (text) text.classList.add('done');
+
+  try {
+    await fetch(`https://api.todoist.com/rest/v2/tasks/${taskId}/close`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${todoistToken}` }
+    });
+    allTasks = allTasks.filter(t => t.id !== taskId);
+    setTimeout(() => { el?.remove(); }, 600);
+  } catch(err) {
+    if (check) { check.classList.remove('done'); check.innerHTML = ''; }
+    if (text) text.classList.remove('done');
+  }
+}
+
+async function addTask() {
+  const input = document.getElementById('new-task-input');
+  const content = input.value.trim();
+  if (!content || !todoistToken) return;
+  input.value = '';
+
+  try {
+    const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${todoistToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ content, due_string: 'today' })
+    });
+
+    if (response.ok) {
+      const newTask = await response.json();
+      allTasks.unshift(newTask);
+      renderTasks();
+    }
+  } catch(err) {}
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ─── MORNING BRIEFING ────────────────────────────────────
