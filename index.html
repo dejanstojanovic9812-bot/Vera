@@ -1007,6 +1007,29 @@ When you learn something important about the user (preferences, goals, context, 
 {"key": "value"}
 </MEMORY_UPDATE>
 
+TASKS:
+You can manage the user's task list. Current tasks: ${getTasksSummary()}
+
+When the user asks you to add a task (in any language, e.g. "dodaj zadatak", "add a task", "podsetи me", "remind me", "zovi marka sutra"), respond naturally AND include a task action block:
+<TASK_ADD>
+{"content": "task name", "due": "YYYY-MM-DD"}
+</TASK_ADD>
+
+When the user asks to complete/finish/done a task, include:
+<TASK_COMPLETE>
+{"match": "partial task name to match"}
+</TASK_COMPLETE>
+
+When the user asks what their tasks are, just tell them from the current tasks list above. Don't use a block for reading tasks.
+
+Date parsing rules:
+- "danas/today" → ${new Date().toISOString().split('T')[0]}
+- "sutra/tomorrow" → ${new Date(Date.now()+86400000).toISOString().split('T')[0]}
+- "prekosutra/day after tomorrow" → ${new Date(Date.now()+172800000).toISOString().split('T')[0]}
+- Specific dates → convert to YYYY-MM-DD
+- No date mentioned → use today's date
+- Time mentions (e.g. "u 10h") → include in the task content, not the due date
+
 FORMATTING:
 - Use markdown sparingly. Bold for emphasis only when it really helps.
 - Keep responses tight. If it can be said in 3 sentences, don't use 6.
@@ -1531,6 +1554,30 @@ async function sendMessage(text) {
         localStorage.setItem(MEMORY_KEY, JSON.stringify(memory));
       } catch(e) {}
       reply = reply.replace(/<MEMORY_UPDATE>[\s\S]*?<\/MEMORY_UPDATE>/, '').trim();
+    }
+
+    // Extract task additions
+    const taskAddMatch = reply.match(/<TASK_ADD>([\s\S]*?)<\/TASK_ADD>/);
+    if (taskAddMatch) {
+      try {
+        const taskData = JSON.parse(taskAddMatch[1].trim());
+        addTaskFromVera(taskData.content, taskData.due);
+      } catch(e) {}
+      reply = reply.replace(/<TASK_ADD>[\s\S]*?<\/TASK_ADD>/, '').trim();
+    }
+
+    // Extract task completions
+    const taskCompleteMatch = reply.match(/<TASK_COMPLETE>([\s\S]*?)<\/TASK_COMPLETE>/);
+    if (taskCompleteMatch) {
+      try {
+        const { match } = JSON.parse(taskCompleteMatch[1].trim());
+        const task = allTasks.find(t => !t.done && t.content.toLowerCase().includes(match.toLowerCase()));
+        if (task) {
+          allTasks = allTasks.map(t => t.id === task.id ? { ...t, done: true, completedAt: new Date().toISOString() } : t);
+          saveTasks();
+        }
+      } catch(e) {}
+      reply = reply.replace(/<TASK_COMPLETE>[\s\S]*?<\/TASK_COMPLETE>/, '').trim();
     }
 
     appendMessage('vera', reply);
