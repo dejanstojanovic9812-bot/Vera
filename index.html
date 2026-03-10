@@ -903,20 +903,10 @@
       <span class="panel-title">Settings</span>
       <button class="close-btn" onclick="toggleSettings()">×</button>
     </div>
-
     <div class="settings-section">
       <div class="settings-label">Anthropic API Key</div>
       <input type="password" class="settings-input" id="settings-api-key" placeholder="sk-ant-api03-..." autocomplete="off" />
-      <div class="settings-label" id="api-status" style="color: var(--accent)"></div>
     </div>
-
-    <div class="settings-section">
-      <div class="settings-label">Todoist API Token
-        <span class="integration-status" id="todoist-status" style="margin-left:8px"></span>
-      </div>
-      <input type="password" class="settings-input" id="settings-todoist" placeholder="Your Todoist API token..." autocomplete="off" />
-    </div>
-
     <button class="settings-save" onclick="saveSettings()">Save Settings</button>
   </div>
 
@@ -968,7 +958,6 @@
 <script>
 // ─── STATE ───────────────────────────────────────────────
 let apiKey = '';
-let todoistToken = '';
 let conversationHistory = [];
 let memory = {};
 let isRecording = false;
@@ -979,7 +968,7 @@ let currentFilter = 'today';
 
 const MEMORY_KEY = 'vera_memory';
 const HISTORY_KEY = 'vera_history';
-const TODOIST_KEY = 'vera_todoist';
+const TASKS_KEY = 'vera_tasks';
 
 // ─── SYSTEM PROMPT ───────────────────────────────────────
 function buildSystemPrompt() {
@@ -1039,10 +1028,10 @@ function initVera() {
   apiKey = key;
   localStorage.setItem('vera_api_key', key);
 
-  // Load memory, history & integrations
+  // Load memory, history & tasks
   try { memory = JSON.parse(localStorage.getItem(MEMORY_KEY) || '{}'); } catch(e) { memory = {}; }
   try { conversationHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { conversationHistory = []; }
-  todoistToken = localStorage.getItem(TODOIST_KEY) || '';
+  try { allTasks = JSON.parse(localStorage.getItem(TASKS_KEY) || '[]'); } catch(e) { allTasks = []; }
 
   document.getElementById('api-setup').style.display = 'none';
   document.getElementById('chat-area').style.display = 'flex';
@@ -1063,7 +1052,7 @@ function initVera() {
 // Auto-load key if saved
 window.addEventListener('load', () => {
   const saved = localStorage.getItem('vera_api_key');
-  todoistToken = localStorage.getItem(TODOIST_KEY) || '';
+  try { allTasks = JSON.parse(localStorage.getItem(TASKS_KEY) || '[]'); } catch(e) { allTasks = []; }
   if (saved) {
     document.getElementById('api-key-input').value = saved;
     initVera();
@@ -1224,16 +1213,11 @@ function toggleSettings() {
   panel.classList.toggle('open');
   if (panel.classList.contains('open')) {
     document.getElementById('settings-api-key').value = apiKey ? '••••••••••••••••' : '';
-    document.getElementById('settings-todoist').value = todoistToken ? '••••••••••••••••' : '';
-    document.getElementById('todoist-status').textContent = todoistToken ? '● connected' : '○ not connected';
-    document.getElementById('todoist-status').className = 'integration-status ' + (todoistToken ? 'connected' : 'disconnected');
   }
 }
 
 function saveSettings() {
   const newApiKey = document.getElementById('settings-api-key').value.trim();
-  const newTodoist = document.getElementById('settings-todoist').value.trim();
-
   if (newApiKey && !newApiKey.startsWith('•')) {
     if (!newApiKey.startsWith('sk-ant-')) {
       document.getElementById('settings-api-key').style.borderColor = 'var(--red)';
@@ -1243,30 +1227,18 @@ function saveSettings() {
     apiKey = newApiKey;
     localStorage.setItem('vera_api_key', apiKey);
   }
-
-  if (newTodoist && !newTodoist.startsWith('•')) {
-    todoistToken = newTodoist;
-    localStorage.setItem(TODOIST_KEY, todoistToken);
-  }
-
-  document.getElementById('todoist-status').textContent = todoistToken ? '● connected' : '○ not connected';
-  document.getElementById('todoist-status').className = 'integration-status ' + (todoistToken ? 'connected' : 'disconnected');
-  document.getElementById('settings-todoist').value = todoistToken ? '••••••••••••••••' : '';
-
   toggleSettings();
 }
 
-// ─── TASKS ───────────────────────────────────────────────
+// ─── TASKS (LOCAL) ───────────────────────────────────────
+function saveTasks() {
+  localStorage.setItem(TASKS_KEY, JSON.stringify(allTasks));
+}
+
 function toggleTasks() {
   const panel = document.getElementById('tasks-panel');
   panel.classList.toggle('open');
-  if (panel.classList.contains('open')) {
-    if (!todoistToken) {
-      document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">Connect Todoist in ⚙ Settings first</div>`;
-      return;
-    }
-    loadTasks();
-  }
+  if (panel.classList.contains('open')) renderTasks();
 }
 
 function setFilter(filter) {
@@ -1277,57 +1249,34 @@ function setFilter(filter) {
   renderTasks();
 }
 
-async function loadTasks() {
-  if (!todoistToken) return;
-  document.getElementById('tasks-body').innerHTML = `<div class="tasks-loading"><div class="thinking"><span></span><span></span><span></span></div></div>`;
-
-  try {
-    const proxyUrl = 'https://corsproxy.io/?url=';
-    const targetUrl = encodeURIComponent('https://api.todoist.com/rest/v2/tasks');
-    const response = await fetch(proxyUrl + targetUrl, {
-      headers: {
-        'Authorization': `Bearer ${todoistToken}`,
-        'x-requested-with': 'XMLHttpRequest'
-      }
-    });
-
-    if (!response.ok) {
-      document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">Could not load tasks. Check your token.</div>`;
-      return;
-    }
-
-    allTasks = await response.json();
-    renderTasks();
-
-  } catch(err) {
-    document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">Connection error.</div>`;
-  }
+function loadTasks() {
+  renderTasks();
 }
 
 function renderTasks() {
   const today = new Date().toISOString().split('T')[0];
-  let filtered = allTasks;
+  let filtered = allTasks.filter(t => !t.done);
 
   if (currentFilter === 'today') {
-    filtered = allTasks.filter(t => t.due && t.due.date <= today);
+    filtered = filtered.filter(t => !t.due || t.due <= today);
   } else if (currentFilter === 'overdue') {
-    filtered = allTasks.filter(t => t.due && t.due.date < today);
+    filtered = filtered.filter(t => t.due && t.due < today);
   }
 
   if (filtered.length === 0) {
-    document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">${currentFilter === 'today' ? 'Nothing due today.' : 'No tasks found.'}</div>`;
+    const msgs = { today: 'Nothing due today. 🎉', all: 'No tasks yet.', overdue: 'No overdue tasks.' };
+    document.getElementById('tasks-body').innerHTML = `<div class="tasks-empty">${msgs[currentFilter]}</div>`;
     return;
   }
 
-  // Sort: overdue first, then today, then future
   filtered.sort((a, b) => {
-    const da = a.due?.date || '9999';
-    const db = b.due?.date || '9999';
+    const da = a.due || '9999';
+    const db = b.due || '9999';
     return da.localeCompare(db);
   });
 
   document.getElementById('tasks-body').innerHTML = filtered.map(task => {
-    const dueDate = task.due?.date;
+    const dueDate = task.due;
     let dueLabel = '';
     let dueClass = '';
     if (dueDate) {
@@ -1342,61 +1291,75 @@ function renderTasks() {
           <div class="task-text">${escapeHtml(task.content)}</div>
           ${dueLabel ? `<div class="task-due ${dueClass}">${dueLabel}</div>` : ''}
         </div>
+        <button onclick="deleteTask('${task.id}')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:2px 4px;font-size:16px;line-height:1;transition:color 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text-dim)'">×</button>
       </div>`;
   }).join('');
 }
 
-async function completeTask(taskId) {
+function completeTask(taskId) {
   const el = document.getElementById('task-' + taskId);
   const check = el?.querySelector('.task-check');
   const text = el?.querySelector('.task-text');
 
-  if (check) { check.classList.add('done'); check.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#080808" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`; }
+  if (check) {
+    check.classList.add('done');
+    check.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#080808" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  }
   if (text) text.classList.add('done');
 
-  try {
-    const proxyUrl = 'https://corsproxy.io/?url=';
-    const targetUrl = encodeURIComponent(`https://api.todoist.com/rest/v2/tasks/${taskId}/close`);
-    await fetch(proxyUrl + targetUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${todoistToken}`,
-        'x-requested-with': 'XMLHttpRequest'
-      }
-    });
-    allTasks = allTasks.filter(t => t.id !== taskId);
-    setTimeout(() => { el?.remove(); }, 600);
-  } catch(err) {
-    if (check) { check.classList.remove('done'); check.innerHTML = ''; }
-    if (text) text.classList.remove('done');
-  }
+  setTimeout(() => {
+    allTasks = allTasks.map(t => t.id === taskId ? { ...t, done: true, completedAt: new Date().toISOString() } : t);
+    saveTasks();
+    el?.remove();
+    if (document.getElementById('tasks-body').children.length === 0) renderTasks();
+  }, 500);
 }
 
-async function addTask() {
+function deleteTask(taskId) {
+  allTasks = allTasks.filter(t => t.id !== taskId);
+  saveTasks();
+  document.getElementById('task-' + taskId)?.remove();
+  if (document.getElementById('tasks-body').children.length === 0) renderTasks();
+}
+
+function addTask() {
   const input = document.getElementById('new-task-input');
   const content = input.value.trim();
-  if (!content || !todoistToken) return;
+  if (!content) return;
   input.value = '';
 
-  try {
-    const proxyUrl = 'https://corsproxy.io/?url=';
-    const targetUrl = encodeURIComponent('https://api.todoist.com/rest/v2/tasks');
-    const response = await fetch(proxyUrl + targetUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${todoistToken}`,
-        'Content-Type': 'application/json',
-        'x-requested-with': 'XMLHttpRequest'
-      },
-      body: JSON.stringify({ content, due_string: 'today' })
-    });
+  const today = new Date().toISOString().split('T')[0];
+  const newTask = {
+    id: Date.now().toString(),
+    content,
+    due: today,
+    done: false,
+    createdAt: new Date().toISOString()
+  };
 
-    if (response.ok) {
-      const newTask = await response.json();
-      allTasks.unshift(newTask);
-      renderTasks();
-    }
-  } catch(err) {}
+  allTasks.unshift(newTask);
+  saveTasks();
+  renderTasks();
+}
+
+// Allow VERA to add tasks via chat
+function addTaskFromVera(content, due) {
+  const newTask = {
+    id: Date.now().toString(),
+    content,
+    due: due || new Date().toISOString().split('T')[0],
+    done: false,
+    createdAt: new Date().toISOString()
+  };
+  allTasks.unshift(newTask);
+  saveTasks();
+}
+
+function getTasksSummary() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayTasks = allTasks.filter(t => !t.done && t.due && t.due <= today);
+  if (todayTasks.length === 0) return 'No tasks due today.';
+  return `${todayTasks.length} task(s) due today: ${todayTasks.map(t => t.content).join(', ')}`;
 }
 
 function escapeHtml(str) {
@@ -1410,14 +1373,18 @@ async function morningBriefing() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const briefingPrompt = `Today is ${dateStr}. Generate a short morning briefing for Dejan (Belgrade, Serbia). Search the web for today's latest news across these 4 areas and give a punchy 2-3 minute read summary:
+  const briefingPrompt = `Today is ${dateStr}. Generate a short morning briefing for Dejan (Belgrade, Serbia). 
+
+Tasks for today: ${getTasksSummary()}
+
+Search the web for today's latest news across these 4 areas and give a punchy 2-3 minute read summary:
 
 1. **AI & Tech** — most important AI/tech development in the last 24-48h
 2. **Marketing & Branding** — one actionable insight or notable trend
 3. **Supplement & Fitness Industry** — any notable news (new research, industry moves, etc.)
 4. **Serbia/Regional Business** — any relevant local business or economic news
 
-Format: Each section starts with a bold emoji header. 2-4 sentences max per section. End with one "Worth watching today:" line. Be direct, no filler. Write in English.`;
+Format: Start with a one-line tasks summary if there are tasks. Then each news section starts with a bold emoji header. 2-4 sentences max per section. End with one "Worth watching today:" line. Be direct, no filler. Write in English.`;
 
   appendMessage('user', '☀️ Morning Briefing');
   conversationHistory.push({ role: 'user', content: briefingPrompt });
