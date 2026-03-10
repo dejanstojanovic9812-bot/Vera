@@ -1282,8 +1282,13 @@ async function loadTasks() {
   document.getElementById('tasks-body').innerHTML = `<div class="tasks-loading"><div class="thinking"><span></span><span></span><span></span></div></div>`;
 
   try {
-    const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
-      headers: { 'Authorization': `Bearer ${todoistToken}` }
+    const proxyUrl = 'https://corsproxy.io/?url=';
+    const targetUrl = encodeURIComponent('https://api.todoist.com/rest/v2/tasks');
+    const response = await fetch(proxyUrl + targetUrl, {
+      headers: {
+        'Authorization': `Bearer ${todoistToken}`,
+        'x-requested-with': 'XMLHttpRequest'
+      }
     });
 
     if (!response.ok) {
@@ -1350,9 +1355,14 @@ async function completeTask(taskId) {
   if (text) text.classList.add('done');
 
   try {
-    await fetch(`https://api.todoist.com/rest/v2/tasks/${taskId}/close`, {
+    const proxyUrl = 'https://corsproxy.io/?url=';
+    const targetUrl = encodeURIComponent(`https://api.todoist.com/rest/v2/tasks/${taskId}/close`);
+    await fetch(proxyUrl + targetUrl, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${todoistToken}` }
+      headers: {
+        'Authorization': `Bearer ${todoistToken}`,
+        'x-requested-with': 'XMLHttpRequest'
+      }
     });
     allTasks = allTasks.filter(t => t.id !== taskId);
     setTimeout(() => { el?.remove(); }, 600);
@@ -1369,11 +1379,14 @@ async function addTask() {
   input.value = '';
 
   try {
-    const response = await fetch('https://api.todoist.com/rest/v2/tasks', {
+    const proxyUrl = 'https://corsproxy.io/?url=';
+    const targetUrl = encodeURIComponent('https://api.todoist.com/rest/v2/tasks');
+    const response = await fetch(proxyUrl + targetUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${todoistToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-requested-with': 'XMLHttpRequest'
       },
       body: JSON.stringify({ content, due_string: 'today' })
     });
